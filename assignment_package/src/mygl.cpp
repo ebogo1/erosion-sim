@@ -8,7 +8,7 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
-      mp_geomCube(new Cube(this)), mp_worldAxes(new WorldAxes(this)),
+      mp_geomQuad(new Quad(this)), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain())
 {
@@ -26,9 +26,9 @@ MyGL::~MyGL()
 {
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
-    mp_geomCube->destroy();
+    mp_geomQuad->destroy();
 
-    delete mp_geomCube;
+    delete mp_geomQuad;
     delete mp_worldAxes;
     delete mp_progLambert;
     delete mp_progFlat;
@@ -67,7 +67,7 @@ void MyGL::initializeGL()
     glGenVertexArrays(1, &vao);
 
     //Create the instance of Cube
-    mp_geomCube->create();
+    mp_geomQuad->create();
     mp_worldAxes->create();
 
     // Create and set up the diffuse shader
@@ -85,15 +85,15 @@ void MyGL::initializeGL()
 //    vao.bind();
     glBindVertexArray(vao);
 
-    mp_terrain->CreateTestScene();
+    mp_terrain->GenerateBaseTerrain();
 }
 
 void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dimensions.x, mp_terrain->dimensions.y * 0.75, mp_terrain->dimensions.z),
-                       glm::vec3(mp_terrain->dimensions.x / 2, mp_terrain->dimensions.y / 2, mp_terrain->dimensions.z / 2), glm::vec3(0,1,0));
+    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dim.x, 64, mp_terrain->dim.y),
+                       glm::vec3(mp_terrain->dim.x / 2, 32, mp_terrain->dim.y / 2), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)
@@ -133,31 +133,23 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-    for(int x = 0; x < mp_terrain->dimensions.x; ++x)
+    for(int x = 0; x < mp_terrain->dim.x - 1; ++x)
     {
-        for(int y = 0; y < mp_terrain->dimensions.y; ++y)
+        for(int z = 0; z < mp_terrain->dim.y - 1; ++z)
         {
-            for(int z = 0; z < mp_terrain->dimensions.z; ++z)
-            {
-                BlockType t;
-                if((t = mp_terrain->m_blocks[x][y][z]) != EMPTY)
-                {
-                    switch(t)
-                    {
-                    case DIRT:
-                        mp_progLambert->setGeometryColor(glm::vec4(121.f, 85.f, 58.f, 255.f) / 255.f);
-                        break;
-                    case GRASS:
-                        mp_progLambert->setGeometryColor(glm::vec4(95.f, 159.f, 53.f, 255.f) / 255.f);
-                        break;
-                    case STONE:
-                        mp_progLambert->setGeometryColor(glm::vec4(0.5f));
-                        break;
-                    }
-                    mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, y, z)));
-                    mp_progLambert->draw(*mp_geomCube);
-                }
-            }
+            mp_geomQuad->yvals[0] = mp_terrain->getHeightAt(x, z);
+            mp_geomQuad->yvals[1] = mp_terrain->getHeightAt(x+1, z);
+            mp_geomQuad->yvals[2] = mp_terrain->getHeightAt(x+1, z+1);
+            mp_geomQuad->yvals[3] = mp_terrain->getHeightAt(x, z+1);
+            mp_geomQuad->yvals[4] = mp_terrain->getHeightAt(x+0.5, z+0.5);
+
+            mp_geomQuad->destroy();            
+            mp_geomQuad->create();
+
+            mp_progLambert->setGeometryColor(glm::vec4(1.f));
+
+            mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, 0, z)));
+            mp_progLambert->draw(*mp_geomQuad);
         }
     }
 }
