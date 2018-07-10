@@ -8,7 +8,8 @@
 
 MyGL::MyGL(QWidget *parent)
     : OpenGLContext(parent),
-      mp_geomQuad(new Quad(this)), mp_worldAxes(new WorldAxes(this)),
+      init(false),
+      mp_geomCube(new Cube(this)), mp_geomQuad(std::vector<Quad*>()), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
       mp_camera(new Camera()), mp_terrain(new Terrain())
 {
@@ -26,9 +27,14 @@ MyGL::~MyGL()
 {
     makeCurrent();
     glDeleteVertexArrays(1, &vao);
-    mp_geomQuad->destroy();
+    mp_geomCube->destroy();
 
-    delete mp_geomQuad;
+    foreach(auto q, mp_geomQuad) {
+        q->destroy();
+        delete q;
+    }
+
+    delete mp_geomCube;
     delete mp_worldAxes;
     delete mp_progLambert;
     delete mp_progFlat;
@@ -42,6 +48,24 @@ void MyGL::MoveMouseToCenter()
     QCursor::setPos(this->mapToGlobal(QPoint(width() / 2, height() / 2)));
 }
 
+void MyGL::initQuads()
+{
+    int idx = 0;
+    for(int x = 0; x < mp_terrain->dim.x - 1; ++x)
+    {
+        for(int z = 0; z < mp_terrain->dim.y - 1; ++z)
+        {
+            Quad* q = new Quad(this);
+            q->yvals[0] = mp_terrain->fbm(glm::vec2(x, z) / 15.f);
+            q->yvals[1] = mp_terrain->fbm(glm::vec2(x+1, z) / 15.f);
+            q->yvals[2] = mp_terrain->fbm(glm::vec2(x+1, z+1) / 15.f);
+            q->yvals[3] = mp_terrain->fbm(glm::vec2(x, z+1) / 15.f);
+            mp_geomQuad.push_back(q);
+            mp_geomQuad[idx++]->create();
+        }
+    }
+}
+
 void MyGL::initializeGL()
 {
     // Create an OpenGL context using Qt's QOpenGLFunctions_3_2_Core class
@@ -53,7 +77,7 @@ void MyGL::initializeGL()
     // Set a few settings/modes in OpenGL rendering
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POLYGON_SMOOTH);
+    glDisable(GL_POLYGON_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
     // Set the size with which points should be rendered
@@ -66,8 +90,8 @@ void MyGL::initializeGL()
     // Create a Vertex Attribute Object
     glGenVertexArrays(1, &vao);
 
-    //Create the instance of Cube
-    mp_geomQuad->create();
+    //Create the instance of Quad
+    mp_geomCube->create();
     mp_worldAxes->create();
 
     // Create and set up the diffuse shader
@@ -86,6 +110,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->GenerateBaseTerrain();
+    initQuads();
 }
 
 void MyGL::resizeGL(int w, int h)
@@ -133,25 +158,20 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
+
+int idx = 0;
     for(int x = 0; x < mp_terrain->dim.x - 1; ++x)
     {
         for(int z = 0; z < mp_terrain->dim.y - 1; ++z)
         {
-            mp_geomQuad->yvals[0] = mp_terrain->getHeightAt(x, z);
-            mp_geomQuad->yvals[1] = mp_terrain->getHeightAt(x+1, z);
-            mp_geomQuad->yvals[2] = mp_terrain->getHeightAt(x+1, z+1);
-            mp_geomQuad->yvals[3] = mp_terrain->getHeightAt(x, z+1);
-            mp_geomQuad->yvals[4] = mp_terrain->getHeightAt(x+0.5, z+0.5);
-
-            mp_geomQuad->destroy();            
-            mp_geomQuad->create();
-
             mp_progLambert->setGeometryColor(glm::vec4(1.f));
 
             mp_progLambert->setModelMatrix(glm::translate(glm::mat4(), glm::vec3(x, 0, z)));
-            mp_progLambert->draw(*mp_geomQuad);
+            mp_progLambert->draw(*mp_geomQuad[idx++]);
         }
     }
+
+
 }
 
 

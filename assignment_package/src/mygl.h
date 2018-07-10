@@ -5,6 +5,7 @@
 #include <utils.h>
 #include <shaderprogram.h>
 #include <scene/quad.h>
+#include <scene/cube.h>
 #include <scene/worldaxes.h>
 #include "camera.h"
 #include <scene/terrain.h>
@@ -17,7 +18,10 @@ class MyGL : public OpenGLContext
 {
     Q_OBJECT
 private:
-    Quad* mp_geomQuad;// The instance of a unit quad we can use to render any quad.
+    bool init;
+
+    Cube* mp_geomCube;
+    std::vector<Quad*> mp_geomQuad; // Instances of a quad
     WorldAxes* mp_worldAxes; // A wireframe representation of the world axes. It is hard-coded to sit centered at (32, 128, 32).
     ShaderProgram* mp_progLambert;// A shader program that uses lambertian reflection
     ShaderProgram* mp_progFlat;// A shader program that uses "flat" reflection (no shadowing at all)
@@ -40,6 +44,7 @@ public:
     explicit MyGL(QWidget *parent = 0);
     ~MyGL();
 
+    void initQuads();
     void initializeGL();
     void resizeGL(int w, int h);
     void paintGL();
