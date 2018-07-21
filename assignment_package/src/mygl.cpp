@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
       init(false),
       mp_geomCube(new Cube(this)), mp_geomQuad(std::vector<Quad*>()), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain())
+      mp_camera(new Camera()), mp_terrain(new Terrain(0.5f, 0.5f, 0.25f, 0.5f))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -56,10 +56,10 @@ void MyGL::initQuads()
         for(int z = 0; z < mp_terrain->dim.y - 1; ++z)
         {
             Quad* q = new Quad(this);
-            q->yvals[0] = mp_terrain->fbm(glm::vec2(x, z) / 15.f);
-            q->yvals[1] = mp_terrain->fbm(glm::vec2(x+1, z) / 15.f);
-            q->yvals[2] = mp_terrain->fbm(glm::vec2(x+1, z+1) / 15.f);
-            q->yvals[3] = mp_terrain->fbm(glm::vec2(x, z+1) / 15.f);
+            q->yvals[0] = mp_terrain->getHeightAt(x, z);
+            q->yvals[1] = mp_terrain->getHeightAt(x+1, z);
+            q->yvals[2] = mp_terrain->getHeightAt(x+1, z+1);
+            q->yvals[3] = mp_terrain->getHeightAt(x, z+1);
             mp_geomQuad.push_back(q);
             mp_geomQuad[idx++]->create();
         }
@@ -110,6 +110,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->GenerateBaseTerrain();
+    mp_terrain->RunHydraulicErosion(10);
     initQuads();
 }
 
@@ -158,8 +159,7 @@ void MyGL::paintGL()
 
 void MyGL::GLDrawScene()
 {
-
-int idx = 0;
+    int idx = 0;
     for(int x = 0; x < mp_terrain->dim.x - 1; ++x)
     {
         for(int z = 0; z < mp_terrain->dim.y - 1; ++z)
@@ -170,8 +170,6 @@ int idx = 0;
             mp_progLambert->draw(*mp_geomQuad[idx++]);
         }
     }
-
-
 }
 
 

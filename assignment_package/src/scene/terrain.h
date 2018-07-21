@@ -5,14 +5,23 @@
 class Terrain
 {
 public:
-    Terrain();
+    Terrain(float W, float S, float C, float E);
 
-    glm::vec2 dim;
+    glm::vec2 dim; // Dimensions of terrain (number of cells)
+    float K_rain; // Constant for water amount received by every cell in each iteration
+    float K_sed; // Solubility constant for water to turn into sediment
+    float K_carry; // Carrying capacity of water for sediment
+    float K_evap; // Evaporation constant for each cell
     float heightmap[100][100];
+    float watermap[100][100];
+    float sedmap[100][100];
 
-    void GenerateBaseTerrain();
+    void GenerateBaseTerrain(); // Populates the heightmap according to a FBM function
+    void PopulateNeighbors(int x, int z, std::vector<std::vector<int>> &vector); // Helper function for erosion
+    void RunHydraulicErosion(int n); // Erodes heightmap for n iterations
+    float getHeightAt(int x, int z) const;
 
-    float getHeightAt(float x, float z) const;
+    // FBM noise helper functions
     float random(glm::vec2 n);
     float interpolation(glm::vec2 pos);
     float fbm(glm::vec2 pos);
