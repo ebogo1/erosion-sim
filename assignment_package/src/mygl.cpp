@@ -11,7 +11,7 @@ MyGL::MyGL(QWidget *parent)
       init(false),
       mp_geomCube(new Cube(this)), mp_geomQuad(std::vector<Quad*>()), mp_worldAxes(new WorldAxes(this)),
       mp_progLambert(new ShaderProgram(this)), mp_progFlat(new ShaderProgram(this)),
-      mp_camera(new Camera()), mp_terrain(new Terrain(0.5f, 0.5f, 0.25f, 0.5f))
+      mp_camera(new Camera()), mp_terrain(new Terrain(0.2f, 0.2f, 0.25f, 0.2f, 0.04f))
 {
     // Connect the timer to a function so that when the timer ticks the function is executed
     connect(&timer, SIGNAL(timeout()), this, SLOT(timerUpdate()));
@@ -110,7 +110,8 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->GenerateBaseTerrain();
-    mp_terrain->RunHydraulicErosion(10);
+    //mp_terrain->RunHydraulicErosion(100);
+    mp_terrain->RunThermalErosion(12);
     initQuads();
 }
 
@@ -118,7 +119,7 @@ void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dim.x, 64, mp_terrain->dim.y),
+    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dim.x * 1.75f, 72, mp_terrain->dim.y * 1.75f),
                        glm::vec3(mp_terrain->dim.x / 2, 32, mp_terrain->dim.y / 2), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 

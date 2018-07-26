@@ -3,7 +3,8 @@
 
 #include "iostream"
 
-Terrain::Terrain(float W, float S, float C, float E) : dim(100, 100), K_rain(W), K_sed(S), K_carry(C), K_evap(E)
+Terrain::Terrain(float W, float S, float C, float E, float T)
+    : dim(100, 100), K_rain(W), K_sed(S), K_carry(C), K_evap(E), Talus(T)
 {}
 
 void Terrain::GenerateBaseTerrain()
@@ -81,13 +82,16 @@ void Terrain::RunHydraulicErosion(int n)
                     // Distribute water
                     float altitude_n = heightmap[n[0]][n[1]] + watermap[n[0]][n[1]];
                     float di = altitude - altitude_n;
-                    float wi = glm::min(watermap[x][z], dA) * di / dTotal;
-                    watermap[x][z] -= wi;
-                    watermap[n[0]][n[1]] += wi;
-                    // Distribute sediment
-                    float mi = sedmap[x][z] * wi / watermap[x][z];
-                    sedmap[x][z] -= mi;
-                    sedmap[n[0]][n[1]] += mi;
+                    float wi = glm::max(glm::min(watermap[x][z], dA) * di / dTotal, 0.f);
+                    if(wi <= watermap[x][z])
+                    {
+                        watermap[x][z] -= wi;
+                        watermap[n[0]][n[1]] += wi;
+                        // Distribute sediment
+                        float mi = sedmap[x][z] * wi / watermap[x][z];
+                        sedmap[x][z] -= mi;
+                        sedmap[n[0]][n[1]] += mi;
+                    }
                 }
 
                 // Step 4: Evaporate water from current cell & convert leftover sediment to rock
@@ -97,6 +101,73 @@ void Terrain::RunHydraulicErosion(int n)
                 {
                     sedmap[x][z] -= sedDiff;
                     heightmap[x][z] += sedDiff;
+                }
+            }
+        }
+    }
+}
+
+void Terrain::RunThermalErosion(int n)
+{
+    for(int i = 0; i < n; ++i)
+    {
+        for(int x = 0; x < dim.x; ++x)
+        {
+            for(int z = 0; z < dim.y; ++z)
+            {
+                // Step 1: Find shortest neighbor (rotated Von Neumann neighborhood)
+                float dmax = 0.f; // Maximum height difference with neighbors
+                int xdir, zdir; // Direction of neighbor
+                // NE neighbor
+                if(x < dim.x - 1 && z < dim.y - 1)
+                {
+                    float d = heightmap[x][z] - heightmap[x+1][z+1];
+                    if(d > dmax)
+                    {
+                        dmax = d;
+                        xdir = 1;
+                        zdir = 1;
+                    }
+                }
+                // SE neighbor
+                if(x < dim.x - 1 && z > 0)
+                {
+                    float d = heightmap[x][z] - heightmap[x+1][z-1];
+                    if(d > dmax)
+                    {
+                        dmax = d;
+                        xdir = 1;
+                        zdir = -1;
+                    }
+                }
+                // SW neighbor
+                if(x > 0 && z > 0)
+                {
+                    float d = heightmap[x][z] - heightmap[x-1][z-1];
+                    if(d > dmax)
+                    {
+                        dmax = d;
+                        xdir = -1;
+                        zdir = -1;
+                    }
+                }
+                // NW neighbor
+                if(x > 0 && z < dim.y - 1)
+                {
+                    float d = heightmap[x][z] - heightmap[x+1][z-1];
+                    if(d > dmax)
+                    {
+                        dmax = d;
+                        xdir = 1;
+                        zdir = -1;
+                    }
+                }
+
+                // Step 2: Level out with shortest neighbor
+                if(dmax > Talus)
+                {
+                    heightmap[x][z] -= dmax / 2.f;
+                    heightmap[x+xdir][z+zdir] += dmax / 2.f;
                 }
             }
         }
