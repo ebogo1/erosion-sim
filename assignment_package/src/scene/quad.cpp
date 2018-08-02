@@ -6,17 +6,19 @@ Quad::Quad(OpenGLContext *context) : Drawable(context)
 
 void Quad::create()
 {
-    GLuint idx[6]{0, 1, 2, 0, 2, 3};
-    glm::vec4 vert_pos[4] {
+    GLuint idx[6]{0, 1, 2, 3, 4, 5};
+    glm::vec4 vert_pos[6] {
                 glm::vec4(0.f, yvals[0], 0.f, 1.f), // (0,0)
                 glm::vec4(1.f, yvals[1], 0.f, 1.f), // (1, 0)
                 glm::vec4(1.f, yvals[2], 1.f, 1.f), // (1, 1)
-                glm::vec4(0.f, yvals[3], 1.f, 1.f)};//, // (0, 1)                
+                glm::vec4(0.f, yvals[0], 0.f, 1.f), // (0, 0)
+                glm::vec4(1.f, yvals[2], 1.f, 1.f), // (1, 1)
+                glm::vec4(0.f, yvals[3], 1.f, 1.f)};// (0, 1)
 
     glm::vec4 nor0 = glm::vec4(glm::normalize(glm::cross(glm::vec3(vert_pos[2] - vert_pos[0]), glm::vec3(vert_pos[1] - vert_pos[0]))), 0);
-    glm::vec4 nor1 = glm::vec4(glm::normalize(glm::cross(glm::vec3(vert_pos[3] - vert_pos[0]), glm::vec3(vert_pos[2] - vert_pos[0]))), 0);
+    glm::vec4 nor1 = glm::vec4(glm::normalize(glm::cross(glm::vec3(vert_pos[5] - vert_pos[0]), glm::vec3(vert_pos[4] - vert_pos[0]))), 0);
 
-    glm::vec4 vert_nor[6] {nor0, nor0, nor0, nor1, nor1, nor1};    
+    glm::vec4 vert_nor[6] {nor0, nor0, nor0, nor1, nor1, nor1};
 
     count = 6;
 
@@ -33,7 +35,7 @@ void Quad::create()
     // array buffers rather than element array buffers, as they store vertex attributes like position.
     generatePos();
     context->glBindBuffer(GL_ARRAY_BUFFER, bufPos);
-    context->glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(glm::vec4), vert_pos, GL_STATIC_DRAW);
+    context->glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(glm::vec4), vert_pos, GL_STATIC_DRAW);
 
     generateNor();
     context->glBindBuffer(GL_ARRAY_BUFFER, bufNor);

@@ -50,10 +50,10 @@ void main()
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
 
-        vec4 shadowCol = vec4(.45, .2, .5, 0);
+        vec4 shadowCol = vec4(.24, .15, .3, 0);
         diffuseColor = mix(shadowCol, diffuseColor, diffuseTerm);
 
         // Compute final shaded color
-        //out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-        out_Col = abs(fs_Nor);
+        out_Col = vec4(diffuseColor.rgb, 1.f);
+        //out_Col = abs(fs_Nor);
 }

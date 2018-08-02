@@ -102,7 +102,7 @@ void createCubeVertexNormals(glm::vec4 (&cub_vert_nor)[CUB_VERT_COUNT])
     for(int i = 0; i < 4; i++){
         cub_vert_nor[idx++] = glm::vec4(-1,0,0,0);
     }
-    //Back
+    //Backt
     for(int i = 0; i < 4; i++){
         cub_vert_nor[idx++] = glm::vec4(0,0,-1,0);
     }
