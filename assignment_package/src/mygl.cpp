@@ -76,7 +76,7 @@ void MyGL::initializeGL()
 
     // Set a few settings/modes in OpenGL rendering
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LINE_SMOOTH);
+    glDisable(GL_LINE_SMOOTH);
     glDisable(GL_POLYGON_SMOOTH);
     glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
     glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
@@ -110,8 +110,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->GenerateBaseTerrain();
-    //mp_terrain->RunHydraulicErosion(100);
-    mp_terrain->RunThermalErosion(12);
+    mp_terrain->RunThermalErosion(0);
     initQuads();
 }
 

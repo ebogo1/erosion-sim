@@ -54,6 +54,6 @@ void main()
         diffuseColor = mix(shadowCol, diffuseColor, diffuseTerm);
 
         // Compute final shaded color
-        out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-        //out_Col = vec4(vec3(.9, .35, .5) + vec3(.7, .93, .5) * (cos(2 * 3.1415926536  * (vec3(1.0, 1.0, 1.0) * diffuseTerm + vec3(.98, .3, .66)))), 1);
+        //out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
+        out_Col = abs(fs_Nor);
 }

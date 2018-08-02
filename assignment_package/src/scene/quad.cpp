@@ -16,7 +16,7 @@ void Quad::create()
     glm::vec4 nor0 = glm::vec4(glm::normalize(glm::cross(glm::vec3(vert_pos[2] - vert_pos[0]), glm::vec3(vert_pos[1] - vert_pos[0]))), 0);
     glm::vec4 nor1 = glm::vec4(glm::normalize(glm::cross(glm::vec3(vert_pos[3] - vert_pos[0]), glm::vec3(vert_pos[2] - vert_pos[0]))), 0);
 
-    glm::vec4 vert_nor[6] {nor0, nor0, nor0, nor1, nor1, nor1};
+    glm::vec4 vert_nor[6] {nor0, nor0, nor0, nor1, nor1, nor1};    
 
     count = 6;
 

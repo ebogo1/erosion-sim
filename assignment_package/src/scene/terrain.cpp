@@ -154,20 +154,20 @@ void Terrain::RunThermalErosion(int n)
                 // NW neighbor
                 if(x > 0 && z < dim.y - 1)
                 {
-                    float d = heightmap[x][z] - heightmap[x+1][z-1];
+                    float d = heightmap[x][z] - heightmap[x-1][z+1];
                     if(d > dmax)
                     {
                         dmax = d;
-                        xdir = 1;
-                        zdir = -1;
+                        xdir = -1;
+                        zdir = 1;
                     }
                 }
 
                 // Step 2: Level out with shortest neighbor
                 if(dmax > Talus)
                 {
-                    heightmap[x][z] -= dmax / 2.f;
-                    heightmap[x+xdir][z+zdir] += dmax / 2.f;
+                    heightmap[x][z] -= dmax / 5.f;
+                    heightmap[x+xdir][z+zdir] += dmax / 5.f;
                 }
             }
         }
