@@ -29,11 +29,12 @@ void main()
         vec4 red = vec4(1,0,0,0);
         vec4 yellow = vec4(.85,.85,0,0);
         vec4 green = vec4(.5,.85,.15,0);
+
         vec4 diffuseColor = vec4(1,1,1,0);
         float height = clamp(1.f / fs_Pos.y, 0, 1);
 
         float step1 = 0.0;
-        float step2 = 0.1;
+        float step2 = 0.075;
         float step3 = 0.16;
 
         diffuseColor = mix(red, yellow, smoothstep(step1, step2, height));
@@ -50,8 +51,10 @@ void main()
                                                             //to simulate ambient lighting. This ensures that faces that are not
                                                             //lit by our point light are not completely black.
 
-        vec4 shadowCol = vec4(.24, .15, .3, 0);
+        vec4 shadowCol = vec4(.24, .15, .3, 0);                
+
         diffuseColor = mix(shadowCol, diffuseColor, diffuseTerm);
+
 
         // Compute final shaded color
         out_Col = vec4(diffuseColor.rgb, 1.f);

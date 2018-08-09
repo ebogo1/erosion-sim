@@ -14,10 +14,10 @@ void Terrain::GenerateBaseTerrain()
         for(int z = 0; z < dim.y; ++z)
         {
             heightmap[x][z] = fbm(glm::vec2(x, z) / 15.f);
-            watermap[x][z] = 0;
             sedmap[x][z] = 0;
         }
     }
+    score0 = getErosionScore();
 }
 
 // Helper function for erosion algorithm
@@ -111,9 +111,11 @@ void Terrain::RunThermalErosion(int n)
 {
     for(int i = 0; i < n; ++i)
     {
-        for(int x = 0; x < dim.x; ++x)
+        float s = getErosionScore();
+        s = 1.25 * getErosionScore() / score0;
+        for(int x = 0; x < 100; ++x)
         {
-            for(int z = 0; z < dim.y; ++z)
+            for(int z = 0; z < 100; ++z)
             {
                 // Step 1: Find shortest neighbor (rotated Von Neumann neighborhood)
                 float dmax = 0.f; // Maximum height difference with neighbors
@@ -166,8 +168,8 @@ void Terrain::RunThermalErosion(int n)
                 // Step 2: Level out with shortest neighbor
                 if(dmax > Talus)
                 {
-                    heightmap[x][z] -= dmax / 5.f;
-                    heightmap[x+xdir][z+zdir] += dmax / 5.f;
+                    heightmap[x][z] -= dmax / 5.f / s;
+                    heightmap[x+xdir][z+zdir] += dmax / 5.f / s;
                 }
             }
         }
@@ -177,6 +179,72 @@ void Terrain::RunThermalErosion(int n)
 float Terrain::getHeightAt(int x, int z) const
 {
     return heightmap[x][z];
+}
+
+void Terrain::updateSlopeMap()
+{
+    for(int x = 0; x < dim.x; ++x)
+    {
+        for(int z = 0; z < dim.y; ++z)
+        {
+            // Find biggest height difference
+            float dmax = 0.f; // Maximum height difference with neighbors
+            // NE neighbor
+            if(x < dim.x - 1 && z < dim.y - 1)
+            {
+                float d = glm::abs(heightmap[x][z] - heightmap[x+1][z+1]);
+                dmax = glm::max(dmax, d);
+            }
+            // SE neighbor
+            if(x < dim.x - 1 && z > 0)
+            {
+                float d = glm::abs(heightmap[x][z] - heightmap[x+1][z-1]);
+                dmax = glm::max(dmax, d);
+            }
+            // SW neighbor
+            if(x > 0 && z > 0)
+            {
+                float d = glm::abs(heightmap[x][z] - heightmap[x-1][z-1]);
+                dmax = glm::max(dmax, d);
+            }
+            // NW neighbor
+            if(x > 0 && z < dim.y - 1)
+            {
+                float d = glm::abs(heightmap[x][z] - heightmap[x-1][z+1]);
+                dmax = glm::max(dmax, d);
+            }
+
+            slopemap[x][z] = dmax;
+        }
+    }
+}
+
+float Terrain::getErosionScore()
+{
+    updateSlopeMap();
+    float smean;
+    for(int x = 0; x < 100; ++x)
+    {
+        for(int z = 0; z < 100; ++z)
+        {
+            smean += slopemap[x][z];
+        }
+    }
+    smean /= 10000;
+    float* sdev = new float();
+    return smean;
+    for(int x = 0; x < 100; ++x)
+    {
+        for(int z = 0; z < 100; ++z)
+        {
+            *sdev += pow(slopemap[x][z] - smean, 2);
+        }
+    }
+    *sdev /= 10000;
+    *sdev = sqrt(*sdev);
+    float rsdev = *sdev;
+    delete sdev;
+    return rsdev / smean;
 }
 
 float Terrain::random(glm::vec2 n)

@@ -110,7 +110,7 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->GenerateBaseTerrain();
-    mp_terrain->RunThermalErosion(0);
+    mp_terrain->RunThermalErosion(15);
     initQuads();
 }
 
