@@ -110,7 +110,8 @@ void MyGL::initializeGL()
     glBindVertexArray(vao);
 
     mp_terrain->GenerateBaseTerrain();
-    mp_terrain->RunThermalErosion(15);
+    // RUN EROSION ALGORITHMS HERE
+    mp_terrain->RunThermalErosion(0);
     initQuads();
 }
 
@@ -118,8 +119,8 @@ void MyGL::resizeGL(int w, int h)
 {
     //This code sets the concatenated view and perspective projection matrices used for
     //our scene's camera view.
-    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dim.x * 1.75f, 72, mp_terrain->dim.y * 1.75f),
-                       glm::vec3(mp_terrain->dim.x / 2, 32, mp_terrain->dim.y / 2), glm::vec3(0,1,0));
+    *mp_camera = Camera(w, h, glm::vec3(mp_terrain->dim.x * 1.5f, 64, mp_terrain->dim.y * 1.5f),
+                       glm::vec3(mp_terrain->dim.x / 1.5, 32, mp_terrain->dim.y / 1.5), glm::vec3(0,1,0));
     glm::mat4 viewproj = mp_camera->getViewProj();
 
     // Upload the view-projection matrix to our shaders (i.e. onto the graphics card)

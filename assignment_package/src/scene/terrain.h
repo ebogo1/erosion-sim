@@ -13,14 +13,14 @@ public:
     float K_carry; // Carrying capacity of water for sediment
     float K_evap; // Evaporation constant for each cell
     float Talus; // Constant for thermal erosion
-    float heightmap[100][100];
-    float watermap[100][100];
-    float sedmap[100][100];
+    float heightmap[120][120];
+    float watermap[120][120];
+    float sedmap[120][120];
 
     // Metrics for defining Talus in thermal erosion
     void updateSlopeMap();
     float getErosionScore();
-    float slopemap[100][100];
+    float slopemap[120][120];
     float score0; // score after 0 iterations
 
     void GenerateBaseTerrain(); // Populates the heightmap according to a FBM function

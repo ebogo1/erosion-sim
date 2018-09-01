@@ -4,7 +4,7 @@
 #include "iostream"
 
 Terrain::Terrain(float W, float S, float C, float E, float T)
-    : dim(100, 100), K_rain(W), K_sed(S), K_carry(C), K_evap(E), Talus(T)
+    : dim(120, 120), K_rain(W), K_sed(S), K_carry(C), K_evap(E), Talus(T)
 {}
 
 void Terrain::GenerateBaseTerrain()
@@ -13,7 +13,7 @@ void Terrain::GenerateBaseTerrain()
     {
         for(int z = 0; z < dim.y; ++z)
         {
-            heightmap[x][z] = fbm(glm::vec2(x, z) / 15.f);
+            heightmap[x][z] = fbm(glm::vec2(x, z) / 21.f);
             sedmap[x][z] = 0;
         }
     }
@@ -113,9 +113,9 @@ void Terrain::RunThermalErosion(int n)
     {
         float s = getErosionScore();
         s = 1.25 * getErosionScore() / score0;
-        for(int x = 0; x < 100; ++x)
+        for(int x = 0; x < 120; ++x)
         {
-            for(int z = 0; z < 100; ++z)
+            for(int z = 0; z < 120; ++z)
             {
                 // Step 1: Find shortest neighbor (rotated Von Neumann neighborhood)
                 float dmax = 0.f; // Maximum height difference with neighbors
